@@ -1,0 +1,71 @@
+@model IEnumerable<Datalagring.Web.Models.ProjectViewModel>
+
+@{
+    ViewData["Title"] = "Projects";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Projects</h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> New Project
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.ProjectNumber)</th>
+                            <th>@Html.DisplayNameFor(model => model.Name)</th>
+                            <th>@Html.DisplayNameFor(model => model.StartDate)</th>
+                            <th>@Html.DisplayNameFor(model => model.EndDate)</th>
+                            <th>@Html.DisplayNameFor(model => model.Status)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@Html.DisplayFor(modelItem => item.ProjectNumber)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                                <td>@item.StartDate.ToString("yyyy-MM-dd")</td>
+                                <td>@item.EndDate.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    <span class="badge rounded-pill @(item.Status switch
+                                    {
+                                        ProjectStatus.NotStarted => "bg-secondary",
+                                        ProjectStatus.InProgress => "bg-primary",
+                                        ProjectStatus.Completed => "bg-success",
+                                        _ => "bg-secondary"
+                                    })">
+                                        @item.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Edit" asp-route-id="@item.ProjectNumber" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@item.ProjectNumber" class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-info-circle"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Add any JavaScript needed for the index page here
+    </script>
+} 

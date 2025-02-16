@@ -1,0 +1,6 @@
+@Datalagring.API_HostAddress = http://localhost:5074
+
+GET {{Datalagring.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
