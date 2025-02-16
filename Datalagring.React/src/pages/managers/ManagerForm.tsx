@@ -1,158 +1,101 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
-import {
-  Paper,
-  Typography,
-  Grid,
-  TextField,
-  Button,
-  Box,
-} from '@mui/material';
+import { Box, Button, TextField, Typography, Paper } from '@mui/material';
 import { ProjectManager } from '../../types';
-import { createProjectManager, updateProjectManager, getProjectManager } from '../../services/api';
-
-const validationSchema = Yup.object().shape({
-  firstName: Yup.string().required('First name is required'),
-  lastName: Yup.string().required('Last name is required'),
-  email: Yup.string()
-    .email('Invalid email address')
-    .required('Email is required'),
-  phoneNumber: Yup.string()
-    .required('Phone number is required')
-    .matches(
-      /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/,
-      'Invalid phone number'
-    ),
-});
 
 const ManagerForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [initialValues, setInitialValues] = useState<Partial<ProjectManager>>({
+  const [manager, setManager] = useState<Partial<ProjectManager>>({
     firstName: '',
     lastName: '',
     email: '',
-    phoneNumber: '',
+    phoneNumber: ''
   });
 
   useEffect(() => {
     const fetchManager = async () => {
       if (id) {
         try {
-          const response = await getProjectManager(Number(id));
-          setInitialValues(response.data);
+          const response = await fetch(`https://localhost:7001/api/projectmanagers/${id}`);
+          const data = await response.json();
+          setManager(data);
         } catch (error) {
-          console.error('Failed to fetch project manager:', error);
-          navigate('/managers');
+          console.error('Error fetching manager:', error);
         }
       }
     };
 
     fetchManager();
-  }, [id, navigate]);
+  }, [id]);
 
-  const handleSubmit = async (values: Partial<ProjectManager>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     try {
-      if (id) {
-        await updateProjectManager(Number(id), values as Omit<ProjectManager, 'fullName'>);
-      } else {
-        await createProjectManager(values as Omit<ProjectManager, 'id' | 'fullName'>);
-      }
+      const url = id 
+        ? `https://localhost:7001/api/projectmanagers/${id}`
+        : 'https://localhost:7001/api/projectmanagers';
+      
+      await fetch(url, {
+        method: id ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(manager),
+      });
+
       navigate('/managers');
     } catch (error) {
-      console.error('Failed to save project manager:', error);
+      console.error('Error saving manager:', error);
     }
   };
 
   return (
-    <Paper sx={{ p: 3 }}>
+    <Paper sx={{ p: 3, maxWidth: 600, mx: 'auto', mt: 4 }}>
       <Typography variant="h5" gutterBottom>
-        {id ? 'Edit Project Manager' : 'Create New Project Manager'}
+        {id ? 'Edit Manager' : 'New Manager'}
       </Typography>
-
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-        enableReinitialize
-      >
-        {({ values, errors, touched, handleChange, handleBlur }) => (
-          <Form>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  name="firstName"
-                  label="First Name"
-                  value={values.firstName}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.firstName && Boolean(errors.firstName)}
-                  helperText={touched.firstName && errors.firstName}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  name="lastName"
-                  label="Last Name"
-                  value={values.lastName}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.lastName && Boolean(errors.lastName)}
-                  helperText={touched.lastName && errors.lastName}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  name="email"
-                  label="Email"
-                  type="email"
-                  value={values.email}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.email && Boolean(errors.email)}
-                  helperText={touched.email && errors.email}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  name="phoneNumber"
-                  label="Phone Number"
-                  value={values.phoneNumber}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.phoneNumber && Boolean(errors.phoneNumber)}
-                  helperText={touched.phoneNumber && errors.phoneNumber}
-                />
-              </Grid>
-            </Grid>
-
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
-              <Button
-                variant="outlined"
-                onClick={() => navigate('/managers')}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-              >
-                {id ? 'Save Changes' : 'Create Manager'}
-              </Button>
-            </Box>
-          </Form>
-        )}
-      </Formik>
+      <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+        <TextField
+          fullWidth
+          label="First Name"
+          value={manager.firstName}
+          onChange={(e) => setManager({ ...manager, firstName: e.target.value })}
+          margin="normal"
+          required
+        />
+        <TextField
+          fullWidth
+          label="Last Name"
+          value={manager.lastName}
+          onChange={(e) => setManager({ ...manager, lastName: e.target.value })}
+          margin="normal"
+          required
+        />
+        <TextField
+          fullWidth
+          label="Email"
+          type="email"
+          value={manager.email}
+          onChange={(e) => setManager({ ...manager, email: e.target.value })}
+          margin="normal"
+          required
+        />
+        <TextField
+          fullWidth
+          label="Phone Number"
+          value={manager.phoneNumber}
+          onChange={(e) => setManager({ ...manager, phoneNumber: e.target.value })}
+          margin="normal"
+          required
+        />
+        <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+          <Button variant="outlined" onClick={() => navigate('/managers')}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="contained" color="primary">
+            {id ? 'Save Changes' : 'Create Manager'}
+          </Button>
+        </Box>
+      </Box>
     </Paper>
   );
 };
