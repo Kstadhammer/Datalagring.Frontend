@@ -66,4 +66,4 @@ Both applications provide the following functionality:
 
 ## API Integration
 
-Both applications communicate with a backend API running at `https://localhost:7001`. Make sure the API is running before using either frontend application. 
+Both applications communicate with a backend API running at `https://localhost:7001`. Make sure the API is running before using either frontend application.
